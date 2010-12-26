@@ -21,14 +21,14 @@ TODO: add sidemenu to profile page
 $PluginInfo['UserPermissions'] = array(
 	'Name' => 'User Permissions',
 	'Description' => 'Allows to set custom global permissions for user, ignoring the permissions of user\'s roles.',
-	'Version' => '0.06',
-	'Date' => '30 Mar 2010',
+	'Version' => '1.0.7',
+	'Date' => '30 Dec 2010',
 	'Author' => 'Grandfather Frost'
 );
 
-class UserPermissions implements Gdn_IPlugin{
+class UserPermissions implements Gdn_IPlugin {
 	
-	public function ProfileController_AfterAddSideMenu_Handler(&$Profile){
+	public function ProfileController_AfterAddSideMenu_Handler(&$Profile) {
 		if(Gdn::Session()->CheckPermission('Garden.Roles.Manage') != False){
 			$SideMenu =& $Profile->EventArguments['SideMenu'];
 			$Url = '/role/custompermissions/'.$Profile->User->UserID;
@@ -36,16 +36,16 @@ class UserPermissions implements Gdn_IPlugin{
 		}
 	}
 	
-	public function Base_AfterGetSession_Handler(&$Sender){
+	public function Base_AfterGetSession_Handler(&$Sender) {
 		$User =& $Sender->EventArguments['User'];
 		$this->ChangeUserPermissions($User);
 	}
 	
-	public function Base_SessionQuery_Handler(&$Sender){
+	public function Base_SessionQuery_Handler(&$Sender) {
 		$Sender->SQL->Select('u.CustomPermissions');
 	}
 	
-	private function ChangeUserPermissions(&$User){
+	private function ChangeUserPermissions(&$User) {
 
 		if($User == False) return;
 
@@ -63,10 +63,10 @@ class UserPermissions implements Gdn_IPlugin{
 		}
 	}
 	
-	public function RoleController_CustomPermissions_Create(&$Controller){
+	public function RoleController_CustomPermissions_Create(&$Controller) {
 		
 		$Controller->Permission('Garden.Roles.Manage');
-		$UserID = ArrayValue('0', $Controller->RequestArgs);
+		$UserID = ArrayValue(0, $Controller->RequestArgs);
 		$Form =& $Controller->Form;
 		
 	
@@ -112,23 +112,23 @@ class UserPermissions implements Gdn_IPlugin{
 	
 	}
 	
-	private function SaveUserPermissions($UserID, $PermissionData = False){
-		$SimpleModel = new Gdn_Model('User');
+	private function SaveUserPermissions($UserID, $PermissionData = False) {
+		$UserModel = new Gdn_Model('User');
 		// savetoserializedcolumn merging with old values, so need empty this field
-		$Result = $SimpleModel->SQL
+		$Result = $UserModel->SQL
 			->Update('User')
 			->Set('CustomPermissions', Null)
 			->Where('UserID', $UserID)
 			->Limit(1)
 			->Put();
 		// and save custom permissions
-		if($PermissionData != False){
-			$Result = $SimpleModel->SaveToSerializedColumn('CustomPermissions', $UserID, $PermissionData);
+		if ($PermissionData != False) {
+			$Result = $UserModel->SaveToSerializedColumn('CustomPermissions', $UserID, $PermissionData);
 		}
 		return $Result;
 	}
 	
-	public function Setup(){
+	public function Setup() {
 		Gdn::Structure()
 			->Table('User')
 			->Column('CustomPermissions', 'text', True)
